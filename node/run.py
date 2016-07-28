@@ -5,22 +5,23 @@ import time
 import random
 import signal
 
-site = "http://173.26.102.12/downloader/";
+#site = "http://173.26.102.12/downloader/";
+site = "http://172.17.0.9/web/";
 get_task_url = site+"get_task.php";
 notify_started_url = site+"notify_started.php";
 notify_finished_url = site+"notify_finished.php";
 notify_terminated_url = site+"notify_terminated.php";
 
-node_id = "node-12";
-node_key = "1q2w3e4r";
+node_id = "node12";
+node_key = "123456";
 
 date = "";
 
 def get_task():
-	params = { "id": node_id, "key": key }; 
+	params = { "id": node_id, "key": node_key }; 
 	opener = urllib2.build_opener();
 	post_data = urllib.urlencode(params).encode('utf-8');
-	res = opener.open(site+get_task_url, post_data).read();
+	res = opener.open(get_task_url, post_data).read();
 	if (res == "auth failed"):
 		print "auth failed";
 		exit();
@@ -31,14 +32,14 @@ def notify_started(date):
 	params = { "id": node_id, "key": key , "date": date };
 	opener = urllib2.build_opener();
 	post_data = urllib.urlencode(params).encode('utf-8');
-	res = opener.open(site+notify_started_url, post_data).read();
+	res = opener.open(notify_started_url, post_data).read();
 
 
 def notify_finished(date, st, et, ut):
 	params = { "id": node_id, "key": key , "date": date, "st": st, "et": et, "ut": ut };
 	opener = urllib2.build_opener();
 	post_data = urllib.urlencode(params).encode('utf-8');
-	res = opener.open(site+notify_finished_url, post_data).read();
+	res = opener.open(notify_finished_url, post_data).read();
 	if (res == "auth failed"):
 		print "auth failed";
 		exit();
@@ -48,7 +49,7 @@ def notify_terminated(date):
 	params = { "id": node_id, "key": key , "time": date };
 	opener = urllib2.build_opener();
 	post_data = urllib.urlencode(params).encode('utf-8');
-	res = opener.open(site+notify_terminated_url, post_data).read();
+	res = opener.open(notify_terminated_url, post_data).read();
 	if (res == "auth failed"):
 		print "auth failed";
 		exit();
@@ -62,6 +63,8 @@ def sig_handler(sig, frame):
 
 if __name__ == '__main__':
 	signal.signal(signal.SIGINT, sig_handler);
+	print get_task();
+	'''
 	while(True):
 		date = get_task();
 		
@@ -76,3 +79,4 @@ if __name__ == '__main__':
 		time_used = end_time - start_time;
 		
 		notify_finished(date, start_strtime, end_strftime);
+	'''

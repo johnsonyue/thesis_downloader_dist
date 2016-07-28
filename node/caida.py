@@ -80,7 +80,7 @@ def get_latest_time_fromsite(username, password):
 		temp.append(parse_latest_year(url+t+e, opener));
 	
 	res = temp[0];
-	for t in temp[1:];
+	for t in temp[1:]:
 		if(time_cmp(t, res) > 0):
 			res = t;
 	

@@ -33,7 +33,7 @@ def main(argv):
 		};
 		manager.on_notify(log_file_name, state_file_name, notify_type, args);
 	elif (type=="get_task"):
-		print manager.get_task(state_file);
+		print manager.get_task(state_file),;
 	elif (type=="auth"):
 		node_id = argv[2];
 		node_key = argv[3];
