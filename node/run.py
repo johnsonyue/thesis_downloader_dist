@@ -64,7 +64,7 @@ if __name__ == '__main__':
 		start_strftime = time.strftime("%Y-%m-%d %H:%M:%S");
 		
 		notify_started(date);
-		download_date(date, proxy_file="proxy_list", mt_num=10);
+		caida.download_date(date, proxy_file="proxy_list", mt_num=10);
 
 		end_time = time.time();
 		end_strftime = time.strftime("%Y-%m-%d %H:%M:%S");

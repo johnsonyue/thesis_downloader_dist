@@ -96,7 +96,7 @@ def auth_node(secret_file, node_id, node_key):
 	fp.close();
 	return False;
 			
-#enum state={finished, unassigned, pending, expired};
+#enum state={finished, unassigned, pending, terminated};
 def change_state(file_name, date, state):
 	fp = open(file_name, 'r');
 	lines = fp.readlines();
@@ -105,26 +105,49 @@ def change_state(file_name, date, state):
 	fp = open(file_name, 'w');
 	for line in lines:
 		if (line.split(' ')[0] == date):
-			fp.write(date+" "+state);
+			fp.write(date+" "+state+'\n');
 		else:
 			fp.write(line);
 	fp.close();
 
-def get_task():
+def get_task(file_name):
 	fp = open(file_name, 'r');
 	lines = fp.readlines();
 	res = "";
 	for i in range(len(lines)-1, -1, -1):
-		if(lines[i].split(' ')[1].strip('\n') == "false"):
+		state = lines[i].split(' ')[1].strip('\n');
+		if(state != "finished" and state != "pending"):
 			res = lines[i];
 			break;
 		
 	return res;
 
-def on_notify():
-	
+def on_notify(log_file_name, state_file_name, type, args):
+	fp = open(log_file_name, 'a');
+	if (type == "finished"):
+		time = args["time"];
+		node_id = args["node_id"];
+		task = args["task"];
+		time_used = args["time_used"];
 
-if __name__ == "__main__":
+		change_state(state_file_name, task, "finished");
+		fp.write(time + " " + node_id + " " + task + " time used:  " + time_used + "(s)\n");
+	elif (type == "started"):
+		time = args["time"];
+		node_id = args["node_id"];
+		task = args["task"];
+
+		change_state(state_file_name, task, "pending");
+		fp.write(time + " " + node_id + " " + task + '\n');
+	elif (type == "terminated"):
+		time = args["time"];
+		node_id = args["node_id"];
+		task = args["task"];
+
+		change_state(state_file_name, task, "terminated");
+		fp.write(time + " " + node_id + " " + task + '\n');
 	
+	fp.close();
+
 #update_state_file("state","20160727",start_time="20070913",is_init=True);
 #update_state_file("state","20160802");
