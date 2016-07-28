@@ -20,12 +20,10 @@ def get_task():
 	params = { "id": node_id, "key": key }; 
 	opener = urllib2.build_opener();
 	post_data = urllib.urlencode(params).encode('utf-8');
-	res = "";
-	while(True):
-		res = opener.open(site+get_task_url, post_data).read();
-		time.sleep(randint(1,5));
-		if(res != "occupied"):
-			break;
+	res = opener.open(site+get_task_url, post_data).read();
+	if (res == "auth failed"):
+		print "auth failed";
+		exit();
 	
 	return res;
 
@@ -33,21 +31,28 @@ def notify_started(date):
 	params = { "id": node_id, "key": key , "date": date };
 	opener = urllib2.build_opener();
 	post_data = urllib.urlencode(params).encode('utf-8');
-	opener.open(site+notify_started_url, post_data).read();
+	res = opener.open(site+notify_started_url, post_data).read();
 
 
 def notify_finished(date, st, et, ut):
 	params = { "id": node_id, "key": key , "date": date, "st": st, "et": et, "ut": ut };
 	opener = urllib2.build_opener();
 	post_data = urllib.urlencode(params).encode('utf-8');
-	opener.open(site+notify_finished_url, post_data).read();
+	res = opener.open(site+notify_finished_url, post_data).read();
+	if (res == "auth failed"):
+		print "auth failed";
+		exit();
 
 
 def notify_terminated(date):
 	params = { "id": node_id, "key": key , "time": date };
 	opener = urllib2.build_opener();
 	post_data = urllib.urlencode(params).encode('utf-8');
-	opener.open(site+notify_terminated_url, post_data).read();
+	res = opener.open(site+notify_terminated_url, post_data).read();
+	if (res == "auth failed"):
+		print "auth failed";
+		exit();
+
 
 def sig_handler(sig, frame):
 	if (date != ""):
@@ -64,7 +69,7 @@ if __name__ == '__main__':
 		start_strftime = time.strftime("%Y-%m-%d %H:%M:%S");
 		
 		notify_started(date);
-		caida.download_date(date, proxy_file="proxy_list", mt_num=10);
+		#caida.download_date(date, proxy_file="proxy_list", mt_num=10);
 
 		end_time = time.time();
 		end_strftime = time.strftime("%Y-%m-%d %H:%M:%S");

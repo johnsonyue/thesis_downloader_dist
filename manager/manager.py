@@ -1,5 +1,28 @@
 import os
 
+def get_all_pid():
+	return [ i for i in os.listdir('/proc') if i.isdigit()];
+
+def get_all_fd(file_path):
+	all_fd = [];
+	for pid in get_all_pid():
+		fd_dir = '/proc/{pid}/fd'.format(pid = pid);
+       		if os.access(fd_dir, os.R_OK) == False:
+			continue;
+
+		for fd in os.listdir(fd_dir):
+			fd_path = os.path.join(fd_dir, fd);
+			if os.path.exists(fd_path) and os.readlink(fd_path) == file_path:
+				all_fd.append(fd_path);
+
+        return all_fd;
+
+def is_occupied(file_name):
+	file_path = os.path.join(os.getcwd() ,file_name);
+	fd_num = len(get_all_fd(file_path));
+	
+	return fd_num >= 1;
+
 def is_heap_year(year):
 	if (not year % 400 or not year % 4):
 		return True;
@@ -37,16 +60,24 @@ def update_state_file(file_name, end_time, start_time="", is_init = False):
 			exit();
 	
 		st = start_time;
+		while(is_occupied(file_name)):
+			time.sleep(random.randint(1,3));
 		fp = open(file_name, 'wb');
 	
 	else:
 		if (not os.path.exists(file_name)):
 			print ("file does not exist");
 			exit();
+
+		while(is_occupied(file_name)):
+			time.sleep(random.randint(1,3));
 		fp = open(file_name,'r');
 		st = fp.readlines()[-1].split(' ')[0];
 		st = next_day(st);
 		fp.close();
+
+		while(is_occupied(file_name)):
+			time.sleep(random.randint(1,3));
 		fp = open(file_name,'a');
 	
 	y = int(st[:4]);
@@ -98,10 +129,14 @@ def auth_node(secret_file, node_id, node_key):
 			
 #enum state={finished, unassigned, pending, terminated};
 def change_state(file_name, date, state):
+	while(is_occupied(file_name)):
+			time.sleep(random.randint(1,3));
 	fp = open(file_name, 'r');
 	lines = fp.readlines();
 	fp.close();
-	
+
+	while(is_occupied(file_name)):
+			time.sleep(random.randint(1,3));
 	fp = open(file_name, 'w');
 	for line in lines:
 		if (line.split(' ')[0] == date):
@@ -111,6 +146,8 @@ def change_state(file_name, date, state):
 	fp.close();
 
 def get_task(file_name):
+	while(is_occupied(file_name)):
+			time.sleep(random.randint(1,3));
 	fp = open(file_name, 'r');
 	lines = fp.readlines();
 	res = "";
@@ -123,6 +160,8 @@ def get_task(file_name):
 	return res;
 
 def on_notify(log_file_name, state_file_name, type, args):
+	while(is_occupied(file_name)):
+			time.sleep(random.randint(1,3));
 	fp = open(log_file_name, 'a');
 	if (type == "finished"):
 		time = args["time"];
