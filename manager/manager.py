@@ -1,4 +1,5 @@
 import os
+import time
 
 def get_all_pid():
 	return [ i for i in os.listdir('/proc') if i.isdigit()];
@@ -154,39 +155,44 @@ def get_task(file_name):
 	for i in range(len(lines)-1, -1, -1):
 		state = lines[i].split(' ')[1].strip('\n');
 		if(state != "finished" and state != "pending"):
-			res = lines[i];
+			res = lines[i].split(' ')[0];
 			break;
 		
 	return res;
 
 def on_notify(log_file_name, state_file_name, type, args):
-	while(is_occupied(file_name)):
+	while(is_occupied(log_file_name)):
 			time.sleep(random.randint(1,3));
 	fp = open(log_file_name, 'a');
+	strftime = time.strftime("%Y-%m-%d %H:%M:%S");
+	str = "";
+	
 	if (type == "finished"):
-		time = args["time"];
 		node_id = args["node_id"];
 		task = args["task"];
 		time_used = args["time_used"];
 
 		change_state(state_file_name, task, "finished");
-		fp.write(time + " " + node_id + " " + task + " time used:  " + time_used + "(s)\n");
+		fp.write(strftime + " " + node_id + " " + task + " time used:  " + time_used + "(s)\n");
+		str = strftime + " " + node_id + " " + task + " time used:  " + time_used + "(s)";
 	elif (type == "started"):
-		time = args["time"];
 		node_id = args["node_id"];
 		task = args["task"];
 
 		change_state(state_file_name, task, "pending");
-		fp.write(time + " " + node_id + " " + task + '\n');
+		fp.write(strftime + " " + node_id + " " + task + '\n');
+		str = strftime + " " + node_id + " " + task;
 	elif (type == "terminated"):
-		time = args["time"];
 		node_id = args["node_id"];
 		task = args["task"];
 
 		change_state(state_file_name, task, "terminated");
-		fp.write(time + " " + node_id + " " + task + '\n');
 	
+		fp.write(strftime + " " + node_id + " " + task + '\n');
+		str = strftime + " " + node_id + " " + task;
 	fp.close();
+	
+	return str;
 
 #update_state_file("state","20160727",start_time="20070913",is_init=True);
 #update_state_file("state","20160802");
