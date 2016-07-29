@@ -173,23 +173,23 @@ def on_notify(log_file_name, state_file_name, type, args):
 		time_used = args["time_used"];
 
 		change_state(state_file_name, task, "finished");
-		fp.write(strftime + " " + node_id + " " + task + " time used:  " + time_used + "(s)\n");
-		str = strftime + " " + node_id + " " + task + " time used:  " + time_used + "(s)";
+		fp.write(strftime + " " + node_id + " " + task + " finished, time used:  " + time_used + "(s)\n");
+		str = strftime + " " + node_id + " " + task + " finished, time used:  " + time_used + "(s)";
 	elif (type == "started"):
 		node_id = args["node_id"];
 		task = args["task"];
 
 		change_state(state_file_name, task, "pending");
-		fp.write(strftime + " " + node_id + " " + task + '\n');
-		str = strftime + " " + node_id + " " + task;
+		fp.write(strftime + " " + node_id + " " + task + " started\n");
+		str = strftime + " " + node_id + " " + task + " started";
 	elif (type == "terminated"):
 		node_id = args["node_id"];
 		task = args["task"];
 
 		change_state(state_file_name, task, "terminated");
 	
-		fp.write(strftime + " " + node_id + " " + task + '\n');
-		str = strftime + " " + node_id + " " + task;
+		fp.write(strftime + " " + node_id + " " + task + " terminated\n");
+		str = strftime + " " + node_id + " " + task + " terminated";
 	fp.close();
 	
 	return str;

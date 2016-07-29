@@ -64,27 +64,21 @@ def notify_terminated(date):
 
 def sig_handler(sig, frame):
 	if (date != ""):
-		notify_terminated(date);
-	print "termianted";
-	exit(0);
+		print notify_terminated(date);
+	exit();
 
 if __name__ == '__main__':
 	signal.signal(signal.SIGINT, sig_handler);
-	date = get_task();
-	print notify_started(date);
 
-	'''
 	while(True):
 		date = get_task();
 		
 		start_time = time.time();
-		notify_started(date);
+		print notify_started(date);
 
 		#caida.download_date(date, proxy_file="proxy_list", mt_num=10);
-		time.sleep(random.randint(1,5));
+		time.sleep(random.randint(10,20));
 
 		end_time = time.time();
 		time_used = end_time - start_time;
-		notify_finished(date, time_used);
-
-	'''
+		print notify_finished(date, time_used);
