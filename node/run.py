@@ -6,11 +6,11 @@ import random
 import signal
 
 #site = "http://173.26.102.12/downloader/";
-site = "http://172.17.0.9/web/";
+site = "http://173.26.102.10:8888/";
 get_task_url = site+"get_task.php";
 notify_url = site+"notify.php";
 
-node_id = "node12";
+node_id = "node10";
 node_key = "123456";
 
 date = "";
@@ -76,8 +76,7 @@ if __name__ == '__main__':
 		start_time = time.time();
 		print notify_started(date);
 
-		#caida.download_date(date, proxy_file="proxy_list", mt_num=10);
-		time.sleep(random.randint(10,20));
+		caida.download_date(date, proxy_file="proxy_list", mt_num=10);
 
 		end_time = time.time();
 		time_used = end_time - start_time;

@@ -115,7 +115,7 @@ def get_time_list_fromsite(target_time, username, password):
 		target_year = target_time[:4];
 	
 		for e in parser.dir:
-			if(time_cmp(e.strip('/'), year) == 0):
+			if(time_cmp(e.strip('/'), target_year) == 0):
 				temp = parse_year_dir(target_time, url+t+e, opener);
 				res.extend(temp);
 				break;
@@ -135,7 +135,7 @@ def parse_year_dir(target_time, url, opener):
 			res = parse_time_dir(url+e, opener);
 			return res;
 
-def parse_time_dir(url, dir, opener, file):
+def parse_time_dir(url, opener):
 	f = opener.open(url);
 	text = f.read();
 	
@@ -164,7 +164,7 @@ class DownloadThread(threading.Thread):
 		return end_time - self.start_time;
 		
 
-def download_date(time, list_file_name="caida", root_dir="data/caida/ipv4/", proxy_file="", mt_num=0 ):
+def download_date(time, list_file_name="caida", root_dir="/data/data/caida/ipv4/", proxy_file="", mt_num=0 ):
 	auth = read_auth("auth", "caida");
 	url_list = get_time_list_fromsite(time, auth[0], auth[1]);
 	dir = root_dir+time+"/";
