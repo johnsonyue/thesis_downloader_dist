@@ -16,6 +16,7 @@ if __name__ == '__main__':
 
 	while(True):
 		date = handler.get_task();
+		print date;
 		
 		start_time = time.time();
 		print handler.notify_started(date);

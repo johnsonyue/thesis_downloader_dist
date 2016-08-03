@@ -1,13 +1,10 @@
-import ConfigParser
 import urllib
 import urllib2
+import config
 
 class RequestHandler():
 	def __init__(self, config_file):
-		parser = ConfigParser.ConfigParser();
-		parser.read(config_file);
-		self.config = {};
-		map( lambda x:self.config.setdefault(x[0], x[1]), parser.items("handler"));
+		self.config = config.get_config_section_dict("config.ini","handler");
 
 		site = self.config["site"];
 		get_task_page = self.config["get_task"];
