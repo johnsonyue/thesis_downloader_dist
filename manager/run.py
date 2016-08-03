@@ -17,7 +17,9 @@ def main(argv):
 	
 	parser = ConfigParser.ConfigParser();
 	parser.read("config.ini");
-	config = parser.items("files");
+	config = {};
+	map( lambda x:config.setdefault(x[0], x[1]), parser.items("files") );
+
 	state_file_name = config["state_file_name"];
 	log_file_name = config["log_file_name"];
 	secret_file = config["secret_file"];

@@ -4,7 +4,8 @@ class RequestHandler():
 	def __init__(self, config_file):
 		parser = ConfigParser.ConfigParser();
 		parser.read(config_file);
-		self.config = parser.items("handler");
+		self.config = {};
+		map( lambda x:self.config.setdefault(x[0], x[1]), parser.items("handler");
 
 		site = self.config["site"];
 		get_task_page = self.config["get_task"];
