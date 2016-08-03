@@ -18,7 +18,6 @@ def main(argv):
 	
 	cfg = config.get_config_section_dict("config.ini","code");
 	code_path = cfg["code_path"];
-	print code_path+"/config.ini";
 	cfg = config.get_config_section_dict(code_path+"/config.ini","files");
 	
 	state_file_name = code_path+"/"+cfg["state_file_name"];
