@@ -53,7 +53,7 @@ class RequestHandler():
 		params = { "id": self.node_id, "key": self.node_key , "type": "terminated", "task": date };
 		opener = urllib2.build_opener();
 		post_data = urllib.urlencode(params).encode('utf-8');
-		res = opener.open(self, notify_url, post_data).read();
+		res = opener.open(self.notify_url, post_data).read();
 		if (res == "auth failed"):
 			print "auth failed";
 			exit();
