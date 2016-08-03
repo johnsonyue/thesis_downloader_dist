@@ -1,4 +1,6 @@
 import ConfigParser
+import urllib
+import urllib2
 
 class RequestHandler():
 	def __init__(self, config_file):

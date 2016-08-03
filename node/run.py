@@ -1,9 +1,6 @@
 import caida
 import request_handler
-import urllib
-import urllib2
 import time
-import random
 import signal
 
 date = "";
