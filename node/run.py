@@ -15,6 +15,7 @@ def sig_handler(sig, frame):
 if __name__ == '__main__':
 	signal.signal(signal.SIGINT, sig_handler);
 	proxy_file = config.get_config_section_dict("config.ini", "proxy")["proxy_file"];
+	root_dir = config.get_config_section_dict("config.ini", "data")["root_dir"];
 
 	while(True):
 		date = handler.get_task();
@@ -23,7 +24,7 @@ if __name__ == '__main__':
 		start_time = time.time();
 		print handler.notify_started(date);
 
-		caida.download_date(date, proxy_file=proxy_file, mt_num=10);
+		caida.download_date(date, root_dir=root_dir, proxy_file=proxy_file, mt_num=10);
 
 		end_time = time.time();
 		time_used = end_time - start_time;
