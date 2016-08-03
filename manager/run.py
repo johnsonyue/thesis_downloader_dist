@@ -1,9 +1,6 @@
 import sys
 import manager
-
-state_file_name = "/git/manager/state";
-log_file_name = "/git/manager/log";
-secret_file = "/git/manager/nodes";
+import ConfigParser
 
 def usage():
 	print "python manage.py <type> <args...>";
@@ -17,6 +14,13 @@ def main(argv):
 		usage();
 		exit();
 	type = argv[1];
+	
+	parser = ConfigParser.ConfigParser();
+	parser.read("config.ini");
+	config = parser.items("files");
+	state_file_name = config["state_file_name"];
+	log_file_name = config["log_file_name"];
+	secret_file = config["secret_file"];
 	
 	if (type=="on_notify"):
 		if (len(argv) < 5):
