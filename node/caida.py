@@ -172,17 +172,19 @@ def get_alive_thread_cnt(th_pool):
 	cnt_alive = 0;
 	for i in range(len(th_pool)):
 		t = th_pool[i];
-		if (t.is_alive() and t.get_time_alive() >= 3):
+		#if (t.is_alive() and t.get_time_alive() >= 1):
+		if (t.is_alive() ):
 			cnt_alive = cnt_alive + 1;
-		elif (not t.is_alive()):
-			th_pool.pop(i);
+	for th in th_pool:
+		if (not th.is_alive()):
+			th_pool.remove(th);
 	
 	return cnt_alive;
 
-def download_date(time, root_dir="/data/data/caida/ipv4/", proxy_file="", mt_num=0 ):
+def download_date(date, root_dir="/data/data/caida/ipv4/", proxy_file="", mt_num=0 ):
 	auth = read_auth("auth", "caida");
-	url_list = get_time_list_fromsite(time, auth[0], auth[1]);
-	dir = root_dir+time+"/";
+	url_list = get_time_list_fromsite(date, auth[0], auth[1]);
+	dir = root_dir+date+"/";
 	if (not os.path.exists(dir)):
 		os.makedirs(dir);
 	
@@ -228,6 +230,7 @@ def download_date(time, root_dir="/data/data/caida/ipv4/", proxy_file="", mt_num
 				cur_proxy = cur_proxy + 1;
 				if (cur_proxy >= len(proxy_list)):
 					cur_proxy = 0;
+					time.sleep(10);
 
 				if( os.path.exists(dir+file) ):
                                         print "skipping existing file: "+file;
