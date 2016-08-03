@@ -183,7 +183,17 @@ def get_alive_thread_cnt(th_pool):
 
 def download_date(date, root_dir="/data/data/caida/ipv4/", proxy_file="", mt_num=0 ):
 	auth = read_auth("auth", "caida");
-	url_list = get_time_list_fromsite(date, auth[0], auth[1]);
+	is_succeeded = False;
+	round_cnt = 1;
+	while(not is_succeeded):
+		try:
+			url_list = get_time_list_fromsite(date, auth[0], auth[1]);
+			is_succeeded = True;
+		except:
+			is_succeed = False;
+			round_cnt = round_cnt + 1;
+			time.sleep(10*round_cnt);
+
 	dir = root_dir+date+"/";
 	if (not os.path.exists(dir)):
 		os.makedirs(dir);

@@ -228,5 +228,5 @@ class ProxyPool():
 		
 pool = ProxyPool("proxy_list");
 #pool.update_proxy(True, 100, 30);
-pool.update_proxy(False, 100, 30);
+pool.update_proxy(False, 10, 30);
 pool.export_proxy("proxy_list");
