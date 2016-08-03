@@ -8,7 +8,7 @@
 	* chmod -R 777 manager (to give full caps of www-data)
 
 * node:
-	* modify config.ini (handler 5 items: site, get_task, notify, node_id, node_key, proxy 1 item: proxy_file)
+	* modify config.ini (handler 5 items: site, get_task, notify, node_id, node_key, data 1 item: root_dir, proxy 1 item: proxy_file)
 	* use proxy.py to generate proxy_list, or use create proxy file by yourself from your own proxys.
 	* python run.py to start downloading.
 	* to terminate , use ctrl+c.
