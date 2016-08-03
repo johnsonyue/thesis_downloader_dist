@@ -1,7 +1,7 @@
 import ConfigParser
 
 class RequestHandler():
-	def __init_(self, config_file):
+	def __init__(self, config_file):
 		parser = ConfigParser.ConfigParser();
 		parser.read(config_file);
 		self.config = parser.items("handler");
