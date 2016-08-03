@@ -5,15 +5,15 @@ import time
 import signal
 
 date = "";
+handler = request_handler.RequestHandler("config.ini");
 
 def sig_handler(sig, frame):
 	if (date != ""):
-		print notify_terminated(date);
+		print handler.notify_terminated(date);
 	exit();
 
 if __name__ == '__main__':
 	signal.signal(signal.SIGINT, sig_handler);
-	handler = request_handler.RequestHandler("config.ini");
 	proxy_file = config.get_config_section_dict("config.ini", "proxy")["proxy_file"];
 
 	while(True):
