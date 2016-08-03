@@ -134,6 +134,8 @@ def parse_year_dir(target_time, url, opener):
 		if (time_cmp(time, target_time) == 0):
 			res = parse_time_dir(url+e, opener);
 			return res;
+	
+	return [];
 
 def parse_time_dir(url, opener):
 	f = opener.open(url);
@@ -150,9 +152,12 @@ def parse_time_dir(url, opener):
 	
 	return res;
 
-def download_caida_restricted_worker_mt_wrapper(url, dir, file, username, password, res_list, ind, proxy=""):
+def download_caida_restricted_worker_mt_wrapper(url, dir, file, username, password, res_list, started_list, ind, proxy=""):
+	started_list[ind] = True;
 	res = download_worker.download_caida_restricted_worker(url, dir, file, username, password, proxy);
 	res_list[ind] = res;
+	started_list[ind] = False;
+	
 
 class DownloadThread(threading.Thread):
 	def __init__(self, target, args):
@@ -162,9 +167,19 @@ class DownloadThread(threading.Thread):
 	def get_time_alive(self):
 		end_time = time.time();
 		return end_time - self.start_time;
-		
 
-def download_date(time, list_file_name="caida", root_dir="/data/data/caida/ipv4/", proxy_file="", mt_num=0 ):
+def get_alive_thread_cnt(th_pool):
+	cnt_alive = 0;
+	for i in range(len(th_pool)):
+		t = th_pool[i];
+		if (t.is_alive() and t.get_time_alive() >= 3):
+			cnt_alive = cnt_alive + 1;
+		elif (not t.is_alive()):
+			th_pool.pop(i);
+	
+	return cnt_alive;
+
+def download_date(time, root_dir="/data/data/caida/ipv4/", proxy_file="", mt_num=0 ):
 	auth = read_auth("auth", "caida");
 	url_list = get_time_list_fromsite(time, auth[0], auth[1]);
 	dir = root_dir+time+"/";
@@ -183,6 +198,7 @@ def download_date(time, list_file_name="caida", root_dir="/data/data/caida/ipv4/
 
 	elif (mt_num >= 1):
 		is_finished = [False for i in range(len(url_list))];
+		is_started = [False for i in range(len(url_list))];
 		proxy_list = [];
 		fp = open(proxy_file,'rb');
 		for line in fp.readlines():
@@ -192,11 +208,14 @@ def download_date(time, list_file_name="caida", root_dir="/data/data/caida/ipv4/
 		while(True):
 			task_list = [];
 			th_pool = [];
+			has_started = False;
 			for i in range(len(url_list)):
-				if (not is_finished[i]):
+				if (not is_finished[i] and not is_started[i]):
 					task_list.append(i);
+				if (is_started[i]):
+					has_started = True;
 					
-			if (len(task_list) == 0):
+			if (len(task_list) == 0 and not has_started):
 				break;
 			
 			for i in range(len(task_list)):
@@ -213,20 +232,11 @@ def download_date(time, list_file_name="caida", root_dir="/data/data/caida/ipv4/
 				if( os.path.exists(dir+file) ):
                                         print "skipping existing file: "+file;
                                         is_finished[ind] = True;
-                                        break;
+                                        continue;
 
-				th = DownloadThread(target=download_caida_restricted_worker_mt_wrapper, args=(url,dir,file,auth[0],auth[1],is_finished,ind,proxy,) );
+				th = DownloadThread(target=download_caida_restricted_worker_mt_wrapper, args=(url,dir,file,auth[0],auth[1],is_finished,is_started,ind,proxy,) );
 				th_pool.append(th);
 				th.start();
 				
-				cnt_alive = 0;
-				for t in th_pool:
-					if (t.is_alive() and t.get_time_alive() >= 3):
-						cnt_alive = cnt_alive + 1;
-				
-				if (cnt_alive >= mt_num or i==len(task_list)-1):
-					for t in th_pool:
-						t.join();
-					cnt = 0;
-					th_pool = [];
-
+				while(get_alive_thread_cnt(th_pool) >= mt_num):
+					time.sleep(1);
