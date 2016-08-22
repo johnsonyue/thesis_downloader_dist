@@ -36,6 +36,7 @@ class CaidaParser(HTMLParser.HTMLParser):
 			href_value = self.get_attr_value("href", attrs);
 			self.file.append(href_value);
 
+#utils.
 def read_auth(auth_file, account):
 	ret = [];
 
@@ -61,6 +62,8 @@ def time_cmp(t1, t2):
 		return int(t1[i]) - int(t2[i]);
 	return 0;
 
+#target retrieving.
+#latest time.
 def get_latest_time_fromsite(username, password):
 	url = "https://topo-data.caida.org/team-probing/list-7.allpref24/";
 	passwd_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm();
@@ -97,6 +100,7 @@ def parse_latest_year(url, opener):
 	res = res.split('-')[1].strip('/');
 	return res;
 
+#url list of files with specified time.
 def get_time_list_fromsite(target_time, username, password):
 	url = "https://topo-data.caida.org/team-probing/list-7.allpref24/";
 	passwd_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm();
@@ -152,6 +156,7 @@ def parse_time_dir(url, opener):
 	
 	return res;
 
+#downloading with multi-thread support.
 def download_caida_restricted_worker_mt_wrapper(url, dir, file, username, password, res_list, started_list, ind, proxy=""):
 	started_list[ind] = True;
 	res = download_worker.download_caida_restricted_worker(url, dir, file, username, password, proxy);
