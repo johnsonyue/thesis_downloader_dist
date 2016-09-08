@@ -67,12 +67,6 @@ def download_iplane_restricted_worker(url, dir, file, username, password):
 		fp.close();
 	'''
 
-def get_iplane_file_size(url, opener):
-	request = urllib2.Request(url);
-	request.get_method = lambda : "HEAD";
-	f = opener.open(request);
-	
-	print f.info();
 
 def get_iplane_opener(username, password):
 	print "logging in...";
@@ -94,27 +88,17 @@ def download_irr_delegate(url_list, dir, file):
 	if not os.path.exists(root+dir+file):
 		urllib.urlretrieve(url, root+dir+file);
 
-#auth = ["johnsonyuehit@163.com", "yuzhuoxun123"];
 auth = ["15b903031@hit.edu.cn", "yuzhuoxun123"];
-#url = "https://topo-data.caida.org/team-probing/list-7.allpref24/team-1/daily/2007/cycle-20070913/daily.l7.t1.c000027.20070916.amw-us.warts.gz"
-#url = "https://data-store.ripe.net/datasets/iplane-traceroutes/2016/traces_2016_08_11.tar.gz";
-url = "https://topo-data.caida.org/README.ark.txt"
-#opener = get_iplane_opener(auth[0], auth[1]);
-#opener.open(url);
-#download_iplane_restricted_worker(url, "temp/", "temp", "15b903031@hit.edu.cn", "yuzhuoxun123");
-#download_iplane_restricted_worker(url, "temp/", "temp", "johnsonyuehit@163.com", "johnsonyue123");
+url = "https://topo-data.caida.org/team-probing/list-7.allpref24/team-1/daily/2007/cycle-20070913/daily.l7.t1.c000027.20070916.amw-us.warts.gz"
 
 passwd_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm();
 passwd_mgr.add_password("topo-data", url, auth[0], auth[1]);
 opener = urllib2.build_opener(urllib2.HTTPBasicAuthHandler(passwd_mgr));
 
 request=urllib2.Request(url);
-request.add_header("Range", "bytes=65536-65546");
+request.add_header("Range", "bytes=0-104857600");
 f = opener.open(request);
-print f.info();
-fp = open("temp", 'wb');
+fp = open("daily.l7.t1.c000027.20070916.amw-us.warts.gz",'wb');
 fp.write(f.read());
 fp.close();
 f.close();
-
-#get_iplane_file_size(url, opener);
