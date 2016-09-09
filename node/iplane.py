@@ -4,6 +4,9 @@ import urllib2
 import re
 import os
 import cookielib
+import threading
+import download_worker
+import time
 
 #html parsers.
 class iPlaneParser(HTMLParser.HTMLParser):
@@ -35,44 +38,6 @@ class iPlaneParser(HTMLParser.HTMLParser):
 			href_value = self.get_attr_value("href", attrs);
 			self.file.append(href_value);
 
-def get_iplane_tree(dir, username, password):
-	url = "https://data-store.ripe.net/datasets/iplane-traceroutes/";
-		
-	print "logging in...";
-	params = { "username": username, "password": password }; 
-	cj = cookielib.CookieJar();
-	opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj));
-
-	login_url = "https://access.ripe.net/?originalUrl=https%3A%2F%2Fdata-store.ripe.net%2Fdatasets%2Fiplane-traceroutes%2F&service=datarepo";
-	post_data = urllib.urlencode(params).encode('utf-8');
-
-	opener.open(login_url, post_data);
-	print "done.";
-
-	f = opener.open(url);
-	text = f.read();
-
-	parser = iPlaneParser();
-	parser.feed(text);
-
-	file = open("iplane",'wb');
-	for e in parser.dir:
-		get_year_dir(url+e, dir, opener, file);
-	
-	file.close();
-
-def get_year_dir(url, dir, opener, file):
-	f = opener.open(url);
-	text = f.read();
-	
-	parser = iPlaneParser();
-	parser.feed(text);
-
-	for e in parser.file:
-		list = e.split('_');
-		time = list[1]+list[2]+list[3].split('.')[0];
-		file.write(time+":"+url+e+"\n");
-
 def read_auth(auth_file, account):
 	ret = [];
 
@@ -89,14 +54,6 @@ def read_auth(auth_file, account):
 			is_provided = True;
 	return ret;
 
-#must be of the same length.
-def time_cmp(t1, t2):
-	for i in range(len(t1)):
-		if (t1[i] != t2[i]):
-			break;
-	if (i < len(t1)):
-		return int(t1[i]) - int(t2[i]);
-	return 0;
 def get_latest_time_fromsite(username, password):
 	url = "https://data-store.ripe.net/datasets/iplane-traceroutes/";
 		
@@ -122,7 +79,6 @@ def get_latest_time_fromsite(username, password):
 	
 	return res;
 
-
 def parse_latest_year(url, opener):
 	f = opener.open(url);
 	text = f.read();
@@ -142,19 +98,17 @@ def construct_url_fromtime(target_time):
 	target_month = target_time[4:6];
 	target_day = target_time[6:8];
 	
-	res = url+target_year+"/traces_"+target_year+"_"+target_month+"_"_target_day+".tar.gz";
+	res = url+target_year+"/traces_"+target_year+"_"+target_month+"_"+target_day+".tar.gz";
 
 	return res;
 
-def 
-
 #downloading with multi-thread support.
-def download_caida_restricted_worker_mt_wrapper(url, dir, file, username, password, res_list, started_list, ind, proxy=""):
+def download_segemeted_iplane_restricted_worker_mt_wrapper(url, dir, file, opener, start, end, res_list, started_list, ind, proxy=""):
 	started_list[ind] = True;
-	res = download_worker.download_caida_restricted_worker(url, dir, file, username, password, proxy);
+	res = download_worker.download_segemented_iplane_restricted_worker(url, dir, file, opener, start, end, proxy);
+
 	res_list[ind] = res;
 	started_list[ind] = False;
-	
 
 class DownloadThread(threading.Thread):
 	def __init__(self, target, args):
@@ -178,23 +132,76 @@ def get_alive_thread_cnt(th_pool):
 	
 	return cnt_alive;
 
-def download_date(date, root_dir="/data/data/caida/ipv4/", proxy_file="", mt_num=0 ):
-	auth = read_auth("auth", "caida");
+def download_date(date, root_dir="/data/data/iplane/ipv4/", proxy_file="", seg_size=100*1024, mt_num=0):
+	auth = read_auth("auth", "iplane");
 	is_succeeded = False;
-	round_cnt = 1;
-	while(not is_succeeded):
-		try:
-			url_list = get_time_list_fromsite(date, auth[0], auth[1]);
-			is_succeeded = True;
-		except:
-			is_succeed = False;
-			round_cnt = round_cnt + 1;
-			time.sleep(10*round_cnt);
+	url = construct_url_fromtime(date);
 
-	dir = root_dir+date+"/";
+	dir = root_dir+"/"+date+"/";
+	file = url.split('/')[-1];
 	if (not os.path.exists(dir)):
 		os.makedirs(dir);
 	
+	opener = download_worker.get_iplane_opener(auth[0], auth[1]);
 	if (mt_num == 0):
-		for url in url_list:
-			team = url.split('/')[5];
+		opener.open(url);
+		
+	elif (mt_num >= 1):
+		#get the size first.
+		file_size = download_worker.get_iplane_file_size(opener, url);
+		file_num = int(round(file_size/seg_size));
+		
+		#to get the range list.
+		range_list = [];
+		for i in range(0,file_num-1):
+			range_list.append((i*seg_size+1, (i+1)*seg_size));
+			print (i*seg_size+1)/1024, (i+1)*seg_size/1024,
+		range_list.append((i*seg_size+1, file_size));
+		
+		is_finished = [False for i in range(file_num)];
+		is_started = [False for i in range(file_num)];
+		proxy_list = [];
+		fp = open(proxy_file,'rb');
+		for line in fp.readlines():
+			proxy_list.append(line.strip('\n'));
+		fp.close();
+		cur_proxy = 0;
+		
+		while(True):
+			task_list = [];
+			th_pool = [];
+			has_started = False;
+			for i in range(file_num):
+				if (not is_finished[i] and not is_started[i]):
+					task_list.append(i);
+				if (is_started[i]):
+					has_started = True;
+					
+			if (len(task_list) == 0 and not has_started):
+				break;
+			
+			for i in range(len(task_list)):
+				rang = range_list[task_list[i]];
+				ind = task_list[i];
+				proxy = proxy_list[cur_proxy];
+				cur_proxy = cur_proxy + 1;
+				if (cur_proxy >= len(proxy_list)):
+					cur_proxy = 0;
+					time.sleep(10);
+
+				fn = file+"."+str(ind);
+				if( os.path.exists(dir+fn) ):
+                                        print "skipping existing file: "+fn;
+                                        is_finished[ind] = True;
+                                        continue;
+
+				th = DownloadThread(target=download_segemeted_iplane_restricted_worker_mt_wrapper, args=(url,dir,fn,opener,rang[0],rang[1],is_finished,is_started,ind,proxy,) );
+				th_pool.append(th);
+				th.start();
+				
+				while(get_alive_thread_cnt(th_pool) >= mt_num):
+					time.sleep(1);
+		
+		download_worker.assemble_segements(dir, file);
+
+download_date("20160712", proxy_file="proxy_list", seg_size=20*1024*1024, mt_num=2);

@@ -37,37 +37,7 @@ def download_caida_restricted_worker(url, dir, file, username, password, proxy="
 	
 	return res;
 
-def download_iplane_restricted_worker(url, dir, file, username, password):
-	print "logging in...";
-	login_url = "https://access.ripe.net/?originalUrl=https%3A%2F%2Fdata-store.ripe.net%2Fdatasets%2Fiplane-traceroutes%2F&service=datarepo";
-	params = { "username": username, "password": password }; 
-	cj = cookielib.CookieJar();
-	opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj));
-
-	post_data = urllib.urlencode(params).encode('utf-8');
-
-	f = opener.open(login_url, post_data);
-	print "done.";
-	
-	print f.read();
-	
-	'''	
-	if not os.path.exists(dir):
-		os.makedirs(dir);
-
-	CHUNK = 16*1024;
-	if not os.path.exists(dir+file):
-		f = opener.open(url);
-		fp = open(dir+file, 'wb');
-		while True:
-			chunk = f.read(CHUNK);
-			if not chunk:
-				break;
-			fp.write(chunk);
-		fp.close();
-	'''
-
-
+#iplane restricted.
 def get_iplane_opener(username, password):
 	print "logging in...";
 	login_url = "https://access.ripe.net/?originalUrl=https%3A%2F%2Fdata-store.ripe.net%2Fdatasets%2Fiplane-traceroutes%2F&service=datarepo";
@@ -76,29 +46,87 @@ def get_iplane_opener(username, password):
 	opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj));
 	post_data = urllib.urlencode(params).encode('utf-8');
 
-	opener.open(login_url, post_data);
+	f = opener.open(login_url, post_data);
 	print "done.";
-	
+
 	return opener;
 
-def download_segemented_iplane_restricted_worker(url, opener, start, end):
+def get_iplane_file_size(opener, url):
+	request=urllib2.Request(url);
+	request.add_header("Range", "bytes=0-10737418240");
+	f = opener.open(request);
+	res = int(f.info()["Content-Length"])
+	f.close();
+	print res, str(res/1024/1024)+" MB";
+
+	return res;
+
+def download_segemented_iplane_restricted_worker(url, dir, file, opener, start, end, proxy=""):
+	request=urllib2.Request(url);
+	request.add_header( "Range", "bytes="+str(start)+"-"+str(end) )
+
+	print ("downloading "+file+" "+str(start/1024)+"K"+"-"+str(end/1024)+"K"+" with proxy "+proxy);
+	if(proxy != ""):
+		opener.add_handler(urllib2.ProxyHandler({"http":proxy}));
+
+	if not os.path.exists(dir):
+		os.makedirs(dir);
+
+	res = True;
+	ex = None;
+	try:
+		if not os.path.exists(dir+file):
+			f = opener.open(url, timeout=10);
+			fp = open(dir+file, 'wb');
+			fp.write(f.read());
+			fp.close();
+			f.close();
+	except Exception, e:
+		ex = e;
+		res = False;
+		if os.path.exists(dir+file):
+			os.remove(dir+file);
+	
+	#if res:
+	print url.split('/')[-1] + " " + proxy + " " + str(res) + " " + (str(ex) if ex!=None else "succeeded");
+	
+	return res;
+
+def assemble_segements(dir, file):
+	print "assembling segements ... ";
+	if not os.path.exists(dir):
+		os.makedirs(dir);
+
+	file_list = os.listdir(dir);
+	num_file = 0;
+	for fn in file_list:
+		if(re.findall(file+".\d+", fn)):
+			num_file = num_file + 1;
+	
+	fp = open(file, 'wb')
+	for i in range(1,num_file+1):
+		fn = file+"."+str(i);
+		f = open(fn, 'rb');
+		fp.write(f.read());
+		f.close();
+		os.system("rm -f "+fn);
+	
+	fp.close()
+	print "finished assembling segements";
+	
 	return "";
 	
+
+#irr delegate
 def download_irr_delegate(url_list, dir, file):
 	if not os.path.exists(root+dir+file):
 		urllib.urlretrieve(url, root+dir+file);
 
-auth = ["15b903031@hit.edu.cn", "yuzhuoxun123"];
-url = "https://topo-data.caida.org/team-probing/list-7.allpref24/team-1/daily/2007/cycle-20070913/daily.l7.t1.c000027.20070916.amw-us.warts.gz"
-
-passwd_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm();
-passwd_mgr.add_password("topo-data", url, auth[0], auth[1]);
-opener = urllib2.build_opener(urllib2.HTTPBasicAuthHandler(passwd_mgr));
-
-request=urllib2.Request(url);
-request.add_header("Range", "bytes=0-104857600");
-f = opener.open(request);
-fp = open("daily.l7.t1.c000027.20070916.amw-us.warts.gz",'wb');
-fp.write(f.read());
-fp.close();
-f.close();
+url = "https://data-store.ripe.net/datasets/iplane-traceroutes/2016/traces_2016_01_01.tar.gz";
+dir = "./";
+file = "test";
+opener = get_iplane_opener("johnsonyuehit@163.com", "johnsonyue123");
+start = 1;
+end = 1024;
+proxy = "113.106.213.162:9797";
+download_segemented_iplane_restricted_worker(url, dir, file, opener, start, end, proxy);
