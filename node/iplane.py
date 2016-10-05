@@ -132,7 +132,7 @@ def get_alive_thread_cnt(th_pool):
 	
 	return cnt_alive;
 
-def download_date(date, root_dir="/data/data/iplane/ipv4/", proxy_file="", seg_size=100*1024, mt_num=0):
+def download_date(date, root_dir="/media/download_iplane/", proxy_file="", seg_size=20*1024*1024, mt_num=0):
 	auth = read_auth("auth", "iplane");
 	is_succeeded = False;
 	url = construct_url_fromtime(date);
@@ -149,14 +149,14 @@ def download_date(date, root_dir="/data/data/iplane/ipv4/", proxy_file="", seg_s
 	elif (mt_num >= 1):
 		#get the size first.
 		file_size = download_worker.get_iplane_file_size(opener, url);
+		print "file_size: "+str(file_size)
 		file_num = int(round(file_size/seg_size));
 		
 		#to get the range list.
 		range_list = [];
 		for i in range(0,file_num-1):
-			range_list.append((i*seg_size+1, (i+1)*seg_size));
-			print (i*seg_size+1)/1024, (i+1)*seg_size/1024,
-		range_list.append((i*seg_size+1, file_size));
+			range_list.append((i*seg_size, (i+1)*seg_size-1));
+		range_list.append(((i+1)*seg_size, file_size));
 		
 		is_finished = [False for i in range(file_num)];
 		is_started = [False for i in range(file_num)];
@@ -204,4 +204,4 @@ def download_date(date, root_dir="/data/data/iplane/ipv4/", proxy_file="", seg_s
 		
 		download_worker.assemble_segements(dir, file);
 
-download_date("20160712", proxy_file="proxy_list", seg_size=20*1024*1024, mt_num=2);
+#download_date("20160710", proxy_file="proxy_iplane", seg_size=20*1024*1024, mt_num=10);

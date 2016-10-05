@@ -3,6 +3,8 @@ import urllib2
 import os
 import cookielib
 import copy
+import re
+import sys
 
 #caida restricted.
 def download_caida_restricted_worker(url, dir, file, username, password, proxy=""):
@@ -64,8 +66,11 @@ def get_iplane_file_size(opener, url):
 def download_segemented_iplane_restricted_worker(url, dir, file, opener, start, end, proxy=""):
 	request=urllib2.Request(url);
 	request.add_header( "Range", "bytes="+str(start)+"-"+str(end) )
+	request.add_header("User-agent", "Mozila/5.0");
 
-	print ("downloading "+file+" "+str(start/1024)+"K"+"-"+str(end/1024)+"K"+" with proxy "+proxy);
+	#print ("downloading "+file+" "+str(start/1024)+"K"+"-"+str(end/1024)+"K"+" with proxy "+proxy);
+	print ("downloading "+file+" "+str(start/1024)+"K"+"-"+str(end/1024)+"K"+" with proxy "+proxy+" start:"+str(start)+" end:"+str(end));
+	sys.stdout.flush()
 	if(proxy != ""):
 		opener.add_handler(urllib2.ProxyHandler({"http":proxy}));
 
@@ -76,19 +81,23 @@ def download_segemented_iplane_restricted_worker(url, dir, file, opener, start, 
 	ex = None;
 	try:
 		if not os.path.exists(dir+file):
-			f = opener.open(url, timeout=10);
+			f = opener.open(request, timeout=10);
 			fp = open(dir+file, 'wb');
+			#print f.info();
+			#print f.code;
 			fp.write(f.read());
 			fp.close();
 			f.close();
 	except Exception, e:
+		print e
 		ex = e;
 		res = False;
 		if os.path.exists(dir+file):
 			os.remove(dir+file);
 	
-	#if res:
-	print url.split('/')[-1] + " " + proxy + " " + str(res) + " " + (str(ex) if ex!=None else "succeeded");
+	if res:
+		print file + " " + proxy + " " + str(res) + " " + (str(ex) if ex!=None else "succeeded");
+		sys.stdout.flush()
 	
 	return res;
 
@@ -103,9 +112,9 @@ def assemble_segements(dir, file):
 		if(re.findall(file+".\d+", fn)):
 			num_file = num_file + 1;
 	
-	fp = open(file, 'wb')
-	for i in range(1,num_file+1):
-		fn = file+"."+str(i);
+	fp = open(dir+"/"+file, 'wb')
+	for i in range(num_file):
+		fn = dir+"/"+file+"."+str(i);
 		f = open(fn, 'rb');
 		fp.write(f.read());
 		f.close();
@@ -122,11 +131,14 @@ def download_irr_delegate(url_list, dir, file):
 	if not os.path.exists(root+dir+file):
 		urllib.urlretrieve(url, root+dir+file);
 
+'''
 url = "https://data-store.ripe.net/datasets/iplane-traceroutes/2016/traces_2016_01_01.tar.gz";
 dir = "./";
 file = "test";
 opener = get_iplane_opener("johnsonyuehit@163.com", "johnsonyue123");
-start = 1;
-end = 1024;
-proxy = "113.106.213.162:9797";
-download_segemented_iplane_restricted_worker(url, dir, file, opener, start, end, proxy);
+size = get_iplane_file_size(opener, url);
+print size,str(size/1024/1024)+" MB";
+start = 0;
+end = 100;
+download_segemented_iplane_restricted_worker(url, dir, file, opener, start, end);
+'''

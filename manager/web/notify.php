@@ -7,13 +7,15 @@
 	$type = $_POST["type"];
 	$task = $_POST["task"];
 	
+	$source = $_POST["source"];
+	
 	if (exec("python $code_path/run.py auth $node_id $node_key") == "True"){
 		if ($type != "finished"){
-			echo exec("python $code_path/run.py on_notify $type $node_id $task");
+			echo exec("python $code_path/run.py $source on_notify $type $node_id $task");
 		}
 		else{
 			$time_used = $_POST["time_used"];
-			echo exec("python $code_path/run.py on_notify $type $node_id $task $time_used");
+			echo exec("python $code_path/run.py $source on_notify $type $node_id $task $time_used");
 		}
 	}
 	else{

@@ -16,8 +16,8 @@ class RequestHandler():
 		self.node_id = self.config["node_id"];
 		self.node_key = self.config["node_key"];
 
-	def get_task(self):
-		params = { "id": self.node_id, "key": self.node_key }; 
+	def get_task(self, source):
+		params = { "id": self.node_id, "key": self.node_key , "source": source}; 
 		opener = urllib2.build_opener();
 		post_data = urllib.urlencode(params).encode('utf-8');
 		res = opener.open(self.get_task_url, post_data).read();
@@ -27,8 +27,8 @@ class RequestHandler():
 	
 		return res;
 	
-	def notify_started(self, date):
-		params = { "id": self.node_id, "key": self.node_key, "type": "started", "task": date };
+	def notify_started(self, date, source):
+		params = { "id": self.node_id, "key": self.node_key, "type": "started", "task": date , "source": source};
 		opener = urllib2.build_opener();
 		post_data = urllib.urlencode(params).encode('utf-8');
 		res = opener.open(self.notify_url, post_data).read();
@@ -38,8 +38,8 @@ class RequestHandler():
 						
 		return res;
 	
-	def notify_finished(self, date, time_used):
-		params = { "id": self.node_id, "key": self.node_key , "type": "finished", "task" : date, "time_used": time_used };
+	def notify_finished(self, date, time_used, source):
+		params = { "id": self.node_id, "key": self.node_key , "type": "finished", "task" : date, "time_used": time_used , "source": source};
 		opener = urllib2.build_opener();
 		post_data = urllib.urlencode(params).encode('utf-8');
 		res = opener.open(self.notify_url, post_data).read();
@@ -49,8 +49,8 @@ class RequestHandler():
 		
 		return res;
 
-	def notify_terminated(self, date):
-		params = { "id": self.node_id, "key": self.node_key , "type": "terminated", "task": date };
+	def notify_terminated(self, date, source):
+		params = { "id": self.node_id, "key": self.node_key , "type": "terminated", "task": date , "source": source};
 		opener = urllib2.build_opener();
 		post_data = urllib.urlencode(params).encode('utf-8');
 		res = opener.open(self.notify_url, post_data).read();
