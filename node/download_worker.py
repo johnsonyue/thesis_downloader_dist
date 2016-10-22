@@ -56,10 +56,14 @@ def get_iplane_opener(username, password):
 def get_iplane_file_size(opener, url):
 	request=urllib2.Request(url);
 	request.add_header("Range", "bytes=0-10737418240");
-	f = opener.open(request);
-	res = int(f.info()["Content-Length"])
-	f.close();
-	print res, str(res/1024/1024)+" MB";
+	try:
+		f = opener.open(request);
+		res = int(f.info()["Content-Length"])
+		f.close();
+		print res, str(res/1024/1024)+" MB";
+	except:
+		print "remote file not found: "+url
+		return -1
 
 	return res;
 
