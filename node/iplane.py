@@ -7,6 +7,7 @@ import cookielib
 import threading
 import download_worker
 import time
+import math
 
 #html parsers.
 class iPlaneParser(HTMLParser.HTMLParser):
@@ -149,13 +150,19 @@ def download_date(date, root_dir="/media/download_iplane/", proxy_file="", seg_s
 	elif (mt_num >= 1):
 		#get the size first.
 		file_size = download_worker.get_iplane_file_size(opener, url);
+		if file_size == -1:
+			return
 		print "file_size: "+str(file_size)
-		file_num = int(round(file_size/seg_size));
+		file_num = int(math.ceil(float(file_size)/seg_size));
+		if file_num == 0:
+			return
 		
 		#to get the range list.
 		range_list = [];
 		for i in range(0,file_num-1):
 			range_list.append((i*seg_size, (i+1)*seg_size-1));
+		if (file_num == 1):
+			i = -1
 		range_list.append(((i+1)*seg_size, file_size));
 		
 		is_finished = [False for i in range(file_num)];

@@ -9,7 +9,7 @@
 	
 	$source = $_POST["source"];
 	
-	if (exec("python $code_path/run.py auth $node_id $node_key") == "True"){
+	if (exec("python $code_path/run.py $source auth $node_id $node_key") == "True"){
 		if ($type != "finished"){
 			echo exec("python $code_path/run.py $source on_notify $type $node_id $task");
 		}
